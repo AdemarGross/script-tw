@@ -100,6 +100,7 @@ async function fetchAll(urls) {
             responses.push(response);
         } catch (error) {
             console.error(`Erro ao buscar URL: ${url}`, error);
+            responses.push(null); // Adiciona um valor nulo para a URL com erro
         }
     }
 
@@ -111,19 +112,33 @@ async function fetchAll(urls) {
     injectStyles();
 
     const container = document.querySelector("#contentContainer");
+    if (!container) {
+        console.error("Elemento #contentContainer não encontrado.");
+        return;
+    }
+
     const progressBarInner = createProgressBar(container);
 
     const baseURL = "https://example.com/player?id="; // Substitua pela URL real
     const { playerURLs, players } = collectPlayerData(baseURL);
 
     const totalPlayers = playerURLs.length;
+    if (totalPlayers === 0) {
+        console.error("Nenhum jogador encontrado.");
+        return;
+    }
+
     const responses = await fetchAll(playerURLs);
 
     responses.forEach((data, index) => {
         const percentage = Math.round(((index + 1) / totalPlayers) * 100);
         updateProgressBar(progressBarInner, percentage);
 
-        console.log(`Dados do jogador ${players[index].name}:`, data);
+        if (data) {
+            console.log(`Dados do jogador ${players[index].name}:`, data);
+        } else {
+            console.log(`Erro ao coletar dados do jogador ${players[index].name}.`);
+        }
     });
 
     console.log("Coleta de dados concluída.");
